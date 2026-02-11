@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAF — SME Brokerage API V1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --kaf-purple: #6B027D;
+    --kaf-purple-light: #8A2BA0;
+    --kaf-purple-bg: #F9F3FB;
+    --kaf-purple-border: #D9B3E3;
+    --kaf-dark: #1a1a2e;
+    --kaf-text: #2d2d3a;
+    --kaf-muted: #6b7280;
+    --kaf-bg: #ffffff;
+    --kaf-code-bg: #1e1e2e;
+    --kaf-success: #059669;
+    --kaf-warning: #d97706;
+    --kaf-error: #dc2626;
+    --kaf-info: #2563eb;
+    --shadow-sm: 0 1px 2px rgba(107,2,125,0.05);
+    --shadow-md: 0 4px 12px rgba(107,2,125,0.1);
+    --shadow-lg: 0 8px 30px rgba(107,2,125,0.12);
+    --radius: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--kaf-text);
+    background: #f5f0f7;
+    line-height: 1.75;
+    font-size: 15px;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    position: fixed; top:0; left:0; width: 280px; height:100vh;
+    background: linear-gradient(180deg, var(--kaf-dark) 0%, #12121f 100%);
+    color: #e0d6e6;
+    overflow-y: auto;
+    z-index: 100;
+    padding: 28px 0;
+    border-right: 3px solid var(--kaf-purple);
+  }
+  .scroll-progress {
+    position: fixed; top: 0; left: 0; width: 280px; height: 3px; z-index: 200;
+    background: rgba(107,2,125,0.2);
+  }
+  .scroll-progress-bar {
+    height: 100%; width: 0%; background: linear-gradient(90deg, var(--kaf-purple), #c471ed);
+    transition: width 0.15s;
+    border-radius: 0 2px 2px 0;
+  }
+  .sidebar-logo {
+    text-align: center;
+    padding: 0 24px 24px;
+    border-bottom: 1px solid rgba(107,2,125,0.3);
+    margin-bottom: 16px;
+  }
+  .sidebar-logo img {
+    width: 42px;
+    filter: brightness(0) invert(1);
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    opacity: 0.9;
+  }
+  .sidebar-logo p {
+    color: #a78baf;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    margin-top: 10px;
+    font-weight: 600;
+  }
+  .sidebar-logo .version {
+    display: inline-block;
+    background: var(--kaf-purple);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 6px;
+    letter-spacing: 1px;
+  }
+  .sidebar nav { padding: 0 16px; }
+  .sidebar nav a {
+    display: block;
+    color: #c4b0cc;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13.5px;
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    margin-bottom: 2px;
+    border-left: 3px solid transparent;
+  }
+  .sidebar nav a:hover {
+    background: rgba(107,2,125,0.25);
+    color: #fff;
+    border-left-color: var(--kaf-purple-light);
+    padding-left: 16px;
+    box-shadow: inset 0 0 20px rgba(107,2,125,0.1);
+  }
+  .sidebar nav a:hover .num {
+    background: var(--kaf-purple-light);
+    transform: scale(1.1);
+  }
+  .sidebar nav a.section-title {
+    color: var(--kaf-purple-light);
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-top: 18px;
+    padding-left: 12px;
+    cursor: default;
+  }
+  .sidebar nav a.section-title:hover { background: transparent; }
+  .sidebar nav a .num {
+    display: inline-block;
+    background: var(--kaf-purple);
+    color: #fff;
+    width: 22px; height: 22px;
+    line-height: 22px;
+    text-align: center;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+  }
+  .sidebar-logo a {
+    display: inline-block;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+  .sidebar-logo a:hover { transform: scale(1.08); opacity: 1; }
+  .sidebar-logo a:hover img { opacity: 1; }
+
+  /* ── Main ── */
+  .main { margin-left: 280px; padding: 0; }
+
+  /* ── Hero ── */
+  .hero {
+    background: linear-gradient(135deg, var(--kaf-purple) 0%, #3d0148 100%);
+    color: #fff;
+    padding: 60px 56px 52px;
+    position: relative;
+    overflow: hidden;
+    background-image:
+      linear-gradient(135deg, var(--kaf-purple) 0%, #3d0148 100%),
+      radial-gradient(circle at 20% 80%, rgba(255,255,255,0.03) 1px, transparent 1px),
+      radial-gradient(circle at 80% 20%, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 100% 100%, 24px 24px, 32px 32px;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: -30%; right: -10%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 60%);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: -40%; left: 10%;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 60%);
+    border-radius: 50%;
+  }
+  .hero h1 { font-size: 40px; font-weight: 800; margin-bottom: 8px; position: relative; z-index:1; letter-spacing: -0.8px; line-height: 1.2; }
+  .hero .subtitle { font-size: 16px; opacity: 0.75; margin-bottom: 28px; position: relative; z-index:1; font-weight: 400; letter-spacing: 0.2px; }
+  .hero .base-url-block {
+    position: relative; z-index:1;
+    margin-bottom: 4px;
+  }
+  .hero .base-url-label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 8px;
+  }
+  .hero .base-url {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 13.5px;
+    letter-spacing: 0.3px;
+    backdrop-filter: blur(8px);
+    width: fit-content;
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+    cursor: pointer;
+  }
+  .hero .base-url .copy-hint {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: rgba(255,255,255,0.5);
+    margin-left: 4px;
+  }
+  .hero .base-url:hover .copy-hint { opacity: 1; }
+  .hero .base-url:hover {
+    background: rgba(255,255,255,0.18);
+    border-color: rgba(255,255,255,0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .hero .base-url .env-badge {
+    display: inline-block;
+    background: #d97706;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .hero .version-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-left: 12px;
+    position: relative; z-index:1;
+    vertical-align: middle;
+  }
+  .hero .actions { margin-top: 24px; position: relative; z-index:1; }
+  .btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #FF6C37 0%, #ee5a24 100%);
+    color: #fff;
+    padding: 14px 30px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.25s;
+    box-shadow: 0 4px 15px rgba(255,108,55,0.35);
+    border: none;
+    letter-spacing: 0.2px;
+  }
+  .btn-download:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255,108,55,0.45);
+    background: #e5612f;
+    color: #fff;
+  }
+  .btn-download svg { flex-shrink: 0; }
+
+  /* ── Content ── */
+  .content { max-width: 1100px; padding: 40px 56px 80px; }
+
+  /* ── Callout ── */
+  .callout {
+    background: var(--kaf-purple-bg);
+    border-left: 4px solid var(--kaf-purple);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 20px 24px;
+    margin: 24px 0;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+  }
+  .callout:hover {
+    box-shadow: var(--shadow-md);
+    border-left-width: 6px;
+    transform: translateX(2px);
+  }
+  .callout h3 { color: var(--kaf-purple); margin-bottom: 12px; font-size: 16px; }
+  .callout p { margin-bottom: 8px; font-size: 14px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Section ── */
+  section { margin-bottom: 48px; }
+  h2 {
+    color: var(--kaf-purple);
+    font-size: 26px;
+    font-weight: 800;
+    padding-bottom: 14px;
+    border-bottom: 3px solid var(--kaf-purple);
+    margin-bottom: 24px;
+    margin-top: 52px;
+    transition: all 0.25s;
+    letter-spacing: -0.3px;
+  }
+  h2:hover {
+    border-bottom-color: var(--kaf-purple-light);
+    text-shadow: 0 0 30px rgba(107,2,125,0.15);
+  }
+  h3 {
+    color: var(--kaf-dark);
+    font-size: 19px;
+    font-weight: 700;
+    margin: 32px 0 16px;
+    padding-left: 14px;
+    border-left: 4px solid var(--kaf-purple);
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+  }
+  h3:hover {
+    border-left-width: 6px;
+    padding-left: 18px;
+    color: var(--kaf-purple);
+  }
+
+  /* ── Endpoint badge ── */
+  .endpoint {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--kaf-code-bg);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 13px;
+    margin: 8px 0 16px;
+    color: #e0e0e0;
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+    border: 1px solid transparent;
+    cursor: default;
+  }
+  .endpoint:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(107,2,125,0.2);
+    border-color: var(--kaf-purple);
+  }
+  .method {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+  }
+  .endpoint:hover .method { transform: scale(1.05); }
+  .method-post { background: #059669; color: #fff; }
+  .method-get { background: #2563eb; color: #fff; }
+  .method-patch { background: #d97706; color: #fff; }
+  .method-delete { background: #dc2626; color: #fff; }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 16px 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    font-size: 13.5px;
+    transition: box-shadow 0.3s;
+  }
+  table:hover {
+    box-shadow: var(--shadow-md);
+  }
+  thead th {
+    background: var(--kaf-purple);
+    color: #fff;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  tbody td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #eee;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: #fafafa; }
+  tbody tr {
+    transition: all 0.2s cubic-bezier(.4,0,.2,1);
+  }
+  tbody tr:hover {
+    background: var(--kaf-purple-bg);
+    box-shadow: inset 4px 0 0 var(--kaf-purple);
+  }
+  tbody tr:hover td:first-child { padding-left: 20px; }
+  td code, th code {
+    background: rgba(107,2,125,0.07);
+    color: var(--kaf-purple);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12.5px;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  }
+
+  /* ── Code blocks ── */
+  pre {
+    background: var(--kaf-code-bg);
+    color: #cdd6f4;
+    padding: 20px 24px;
+    border-radius: var(--radius);
+    overflow-x: auto;
+    margin: 16px 0;
+    font-size: 13px;
+    line-height: 1.65;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    box-shadow: var(--shadow-md);
+    border: 1px solid #313244;
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+  }
+  pre:hover {
+    border-color: var(--kaf-purple);
+    box-shadow: 0 6px 25px rgba(107,2,125,0.18), inset 0 0 0 1px rgba(107,2,125,0.1);
+  }
+  .json .key { color: #89b4fa; }
+  .json .str { color: #a6e3a1; }
+  .json .num { color: #fab387; }
+  .json .bool { color: #cba6f7; }
+  .json .null { color: #f38ba8; }
+  .json .punc { color: #6c7086; }
+
+  /* ── Inline code ── */
+  p code, li code, strong code {
+    background: rgba(107,2,125,0.07);
+    color: var(--kaf-purple);
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    transition: all 0.2s;
+    font-weight: 400;
+  }
+  p code:hover, li code:hover, strong code:hover {
+    background: rgba(107,2,125,0.15);
+    box-shadow: 0 0 0 2px rgba(107,2,125,0.08);
+  }
+
+  /* ── Lists ── */
+  ul { padding-left: 20px; margin: 12px 0; list-style: none; }
+  ol { padding-left: 24px; margin: 12px 0; }
+  ul > li { margin-bottom: 8px; position: relative; padding-left: 16px; }
+  ul > li::before {
+    content: '';
+    position: absolute; left: 0; top: 10px;
+    width: 6px; height: 6px;
+    background: var(--kaf-purple);
+    border-radius: 50%;
+    opacity: 0.6;
+  }
+  ol > li { margin-bottom: 8px; }
+  ol > li::marker { color: var(--kaf-purple); font-weight: 600; }
+
+  /* ── Misc ── */
+  p { margin-bottom: 12px; }
+  strong { font-weight: 700; }
+  hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, var(--kaf-purple-border), transparent);
+    margin: 48px 0;
+    opacity: 0.5;
+  }
+  a {
+    color: var(--kaf-purple);
+    transition: all 0.2s;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .content a:hover {
+    color: var(--kaf-purple-light);
+    border-bottom-color: var(--kaf-purple-light);
+  }
+
+  /* ── Status badges ── */
+  .status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .status-draft { background: #dbeafe; color: #1e40af; }
+  .status-pending { background: #fef3c7; color: #92400e; }
+  .status-issued { background: #d1fae5; color: #065f46; }
+  .status-rejected { background: #fee2e2; color: #991b1b; }
+  .status-expired { background: #f3f4f6; color: #6b7280; }
+  .status { transition: all 0.2s; cursor: default; }
+  .status:hover { transform: scale(1.1); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+
+  /* ── Flow diagram ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 24px;
+    background: var(--kaf-purple-bg);
+    border-radius: var(--radius);
+    margin: 16px 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .flow-node {
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    cursor: default;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .flow-node:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 15px rgba(107,2,125,0.2);
+    z-index: 1;
+    position: relative;
+  }
+  .flow-arrow {
+    color: var(--kaf-purple);
+    font-size: 22px;
+    font-weight: 400;
+    transition: all 0.2s;
+    opacity: 0.5;
+  }
+  .flow-node:hover + .flow-arrow { transform: scaleX(1.3); }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    padding: 40px 32px;
+    color: var(--kaf-muted);
+    font-size: 13px;
+    border-top: 2px solid #e8dced;
+    margin-top: 48px;
+    background: linear-gradient(180deg, transparent, var(--kaf-purple-bg));
+  }
+
+  /* ── Scrollbar ── */
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--kaf-purple); border-radius: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+
+  /* ── Nav active state ── */
+  .sidebar nav a.active {
+    background: rgba(107,2,125,0.3);
+    color: #fff;
+  }
+
+  /* ── Copy button for code blocks ── */
+  pre { position: relative; }
+  .copy-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #888;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: -apple-system, sans-serif;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+  /* ── Back to top ── */
+  .back-to-top {
+    position: fixed; bottom: 28px; right: 28px; z-index: 99;
+    width: 44px; height: 44px;
+    background: var(--kaf-purple);
+    color: #fff;
+    border: none; border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(107,2,125,0.3);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transform: translateY(20px);
+    transition: all 0.3s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+  }
+  .back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .back-to-top:hover {
+    background: var(--kaf-purple-light);
+    box-shadow: 0 6px 24px rgba(107,2,125,0.4);
+    transform: translateY(-2px);
+  }
+
+  /* ── Section animations ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s cubic-bezier(.4,0,.2,1), transform 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── JSON label on code blocks ── */
+  .code-label {
+    position: absolute; top: 0; left: 16px;
+    background: var(--kaf-purple);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 0 0 5px 5px;
+    font-family: 'Inter', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .sidebar, .scroll-progress { display: none; }
+    .main { margin-left: 0; }
+    .hero { padding: 32px 24px; }
+    .hero h1 { font-size: 26px; }
+    .content { padding: 24px; }
+    .back-to-top { bottom: 16px; right: 16px; }
+  }
+
+  /* ── Print ── */
+  @media print {
+    .sidebar, .scroll-progress, .back-to-top, .copy-btn { display: none !important; }
+    .main { margin-left: 0 !important; }
+    .hero { background: var(--kaf-purple) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    pre { break-inside: avoid; }
+    table { break-inside: avoid; }
+    body { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ SCROLL PROGRESS ═══ -->
+<div class="scroll-progress"><div class="scroll-progress-bar" id="scrollBar"></div></div>
+
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <a href="https://www.kaf.com.eg/" target="_blank" rel="noopener noreferrer" title="Visit KAF">
+      <img src="https://cdn.prod.website-files.com/66cda1fb23a068f9c28860b2/66dc1d41973146c2ff7c3881_LOGO.avif" alt="KAF">
+    </a>
+    <p>SME Brokerage API</p>
+    <span class="version">V1.0 &bull; Staging</span>
+  </div>
+  <nav>
+    <a class="section-title">Authentication</a>
+    <a href="#s1-1"><span class="num">1.1</span>Login</a>
+    <a href="#s1-2"><span class="num">1.2</span>Refresh Token</a>
+
+    <a class="section-title">Lead Management</a>
+    <a href="#s2-1"><span class="num">2.1</span>Create Lead</a>
+    <a href="#s2-2"><span class="num">2.2</span>List Leads</a>
+    <a href="#s2-3"><span class="num">2.3</span>Get Lead Details</a>
+    <a href="#s2-4"><span class="num">2.4</span>Update Lead</a>
+    <a href="#s2-5"><span class="num">2.5</span>Document Status</a>
+    <a href="#s2-6"><span class="num">2.6</span>Upload Tax ID</a>
+    <a href="#s2-7"><span class="num">2.7</span>Upload Commercial Reg.</a>
+    <a href="#s2-8"><span class="num">2.8</span>Upload KYC</a>
+    <a href="#s2-9"><span class="num">2.9</span>Upload Broker of Record</a>
+
+    <a class="section-title">Quotations</a>
+    <a href="#s3-1"><span class="num">3.1</span>Create Quotation</a>
+    <a href="#s3-2"><span class="num">3.2</span>List Quotations</a>
+    <a href="#s3-3"><span class="num">3.3</span>Get/Update Details</a>
+    <a href="#s3-4"><span class="num">3.4</span>Document Status</a>
+    <a href="#s3-5"><span class="num">3.5</span>Get Members</a>
+    <a href="#s3-6"><span class="num">3.6</span>Update Members</a>
+    <a href="#s3-7"><span class="num">3.7</span>Premium Breakdown</a>
+
+    <a class="section-title">Payment &amp; Reimbursement</a>
+    <a href="#s4-1"><span class="num">4.1</span>Get Frequency</a>
+    <a href="#s4-2"><span class="num">4.2</span>Update Frequency</a>
+    <a href="#s4-3"><span class="num">4.3</span>Get Reimbursement</a>
+    <a href="#s4-4"><span class="num">4.4</span>Set Employee</a>
+    <a href="#s4-5"><span class="num">4.5</span>Set Company</a>
+
+    <a class="section-title">Document Uploads</a>
+    <a href="#s5-1"><span class="num">5.1</span>Signed Document</a>
+    <a href="#s5-2"><span class="num">5.2</span>Alteration Form</a>
+    <a href="#s5-3"><span class="num">5.3</span>Member Data File</a>
+
+    <a class="section-title">Status Transitions</a>
+    <a href="#s6-1"><span class="num">6.1</span>Submit for Approval</a>
+    <a href="#s6-2"><span class="num">6.2</span>Submit for Issuance</a>
+
+    <a class="section-title">Reference</a>
+    <a href="#workflow">Workflow Summary</a>
+    <a href="#status-flow">Status Flow</a>
+    <a href="#endpoint-ref">Endpoint Table</a>
+  </nav>
+</aside>
+
+<!-- ═══════════════════ MAIN ═══════════════════ -->
+<div class="main">
+
+  <!-- ── Hero ── -->
+  <header class="hero">
+    <h1>SME Brokerage API V1 <span class="version-badge">v1.0</span></h1>
+    <p class="subtitle">KAF Life Insurance — Integration Documentation</p>
+    <div class="base-url-block">
+      <div class="base-url-label">Base URL</div>
+      <div class="base-url">
+        <span>https://appstaging.kaf.com.eg/sme/api/v1/</span>
+        <span class="env-badge">Staging</span>
+        <span class="copy-hint">click to copy</span>
+      </div>
+    </div>
+    <div class="actions">
+      <a href="http://drive.google.com/uc?export=download&id=1DBcPhW918rH779o7XXWzUNuERnOGEYnA" class="btn-download">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M13.527.099C6.955-.744.942 3.9.099 10.473c-.843 6.572 3.8 12.584 10.373 13.428 6.573.843 12.587-3.801 13.428-10.374C24.744 6.955 20.101.943 13.527.099zm2.471 7.485a.855.855 0 0 0-.593.25l-4.453 4.453-.307-.307-.643-.643 4.44-4.44a.854.854 0 1 1 1.22-.022l.336.71zm-5.36 5.36l-.643-.643 4.453-4.453a.854.854 0 0 1 .593-.25.854.854 0 0 1 .627 1.271l-.336-.71-4.694 4.785zm-1.665-.39l-.308-.307a.428.428 0 0 1 0-.605l.308.308.643.643-.039.04a.428.428 0 0 1-.604-.079zm-.727 1.028l-.643-.643a.428.428 0 0 1 0-.604l.308.307.643.643-.308.297zm6.367-8.563a1.282 1.282 0 0 0-.89.365l-4.453 4.453-1.258-1.258a.856.856 0 0 0-1.209 0L3.656 11.73a8.566 8.566 0 0 1 12.557-6.711zM3.174 12.211l3.004-3.004a.428.428 0 0 1 .605 0l1.258 1.258-3.348 3.348a8.487 8.487 0 0 1-1.52-1.602zm1.947 2.133l2.975-2.975.643.643-2.594 2.594a8.696 8.696 0 0 1-1.024-.262zm1.516.492l2.094-2.094.307.307-1.826 1.826a8.394 8.394 0 0 1-.575-.04zm7.89 4.89a8.544 8.544 0 0 1-6.951-1.363l1.533-1.533 4.453-4.453a.428.428 0 0 1 .605 0l2.168 2.168-1.808 5.181z" fill="#fff"/></svg>
+        Download Postman Collection
+      </a>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ── What's New ── -->
+    <div class="callout">
+      <h3>What's New — February 9, 2026</h3>
+      <p><strong>Member data validations on quotation creation</strong> (endpoint 3.1)<br>
+      Creating a quotation now enforces multiple member-data validations. See <a href="#s3-1">section 3.1</a> for full error details.</p>
+      <p><strong>First Premium Breakdown endpoint</strong> (<code>GET /purchase-requests/{id}/first-premium-breakdown/</code>)<br>
+      Retrieve the full regulatory-fee breakdown for any quotation, automatically divided by the current payment frequency. See <a href="#s3-7">section 3.7</a>.</p>
+    </div>
+
+    <!-- ══════════ 1. AUTHENTICATION ══════════ -->
+    <h2 id="auth">1. Authentication</h2>
+    <p>All endpoints (except Login and Token Refresh) require a <strong>Bearer token</strong> in the <code>Authorization</code> header.</p>
+
+    <h3 id="s1-1">1.1 Login</h3>
+    <div class="endpoint"><span class="method method-post">POST</span> /auth/login/</div>
+    <p>No auth header required.</p>
+    <p><strong>Request Body (JSON):</strong></p>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>email</code></td><td>string</td><td>Yes</td><td>Broker's registered email</td></tr>
+        <tr><td><code>password</code></td><td>string</td><td>Yes</td><td>Broker's password</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Success Response (200 OK):</strong></p>
+    <pre class="json">{
+  <span class="key">"status_code"</span>: <span class="num">200</span>,
+  <span class="key">"message"</span>: <span class="str">"Login successful"</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"user"</span>: {
+      <span class="key">"id"</span>: <span class="num">1</span>,
+      <span class="key">"email"</span>: <span class="str">"broker@company.com"</span>,
+      <span class="key">"first_name"</span>: <span class="str">"John"</span>,
+      <span class="key">"last_name"</span>: <span class="str">"Doe"</span>,
+      <span class="key">"is_broker"</span>: <span class="bool">true</span>,
+      <span class="key">"broker_data_confirmed"</span>: <span class="bool">true</span>
+    },
+    <span class="key">"credentials"</span>: {
+      <span class="key">"access_token"</span>: <span class="str">"eyJ0eXAiOiJKV1..."</span>,
+      <span class="key">"refresh_token"</span>: <span class="str">"eyJ0eXAiOiJKV1..."</span>
+    }
+  }
+}</pre>
+    <p><strong>Error Responses:</strong></p>
+    <table>
+      <thead><tr><th>Status</th><th>Error</th><th>Cause</th></tr></thead>
+      <tbody>
+        <tr><td>401</td><td><code>Invalid credentials</code></td><td>Wrong email or password</td></tr>
+        <tr><td>401</td><td><code>Account is inactive</code></td><td>User account deactivated</td></tr>
+        <tr><td>403</td><td><code>Access restricted to brokers only</code></td><td>User is not a broker</td></tr>
+        <tr><td>403</td><td><code>Broker account is not confirmed. Please contact support.</code></td><td>Admin has not confirmed broker data</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="s1-2">1.2 Refresh Token</h3>
+    <div class="endpoint"><span class="method method-post">POST</span> /auth/token/refresh/</div>
+    <p>No auth header required.</p>
+    <pre class="json">{ <span class="key">"refresh"</span>: <span class="str">"eyJ0eXAiOiJKV1..."</span> }</pre>
+    <p>Returns a new <code>access</code> token. If the refresh token is expired, the user must log in again.</p>
+
+    <hr>
+
+    <!-- ══════════ 2. LEAD MANAGEMENT ══════════ -->
+    <h2 id="leads">2. Lead Management</h2>
+    <p>A <strong>Lead</strong> represents a company/client. Leads store company information and required documents. Documents uploaded to a lead are <strong>automatically propagated</strong> to all associated quotations in <code>draft</code> or <code>Pending Client Approval</code> status.</p>
+
+    <h3 id="s2-1">2.1 Create Lead (with optional docs)</h3>
+    <div class="endpoint"><span class="method method-post">POST</span> /leads/</div>
+    <p><code>multipart/form-data</code></p>
+    <p><strong>Required Fields:</strong></p>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>company_english_name</code></td><td>string</td><td>Company name in English (unique per broker)</td></tr>
+        <tr><td><code>company_arabic_name</code></td><td>string</td><td>Company name in Arabic</td></tr>
+        <tr><td><code>tax_id</code></td><td>string</td><td>Tax identification number</td></tr>
+        <tr><td><code>commercial_registry</code></td><td>string</td><td>Commercial registry number</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Optional Fields:</strong></p>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>company_address_ar</code></td><td>string</td><td>Company address in Arabic</td></tr>
+        <tr><td><code>signature_name_ar</code></td><td>string</td><td>Signatory name in Arabic</td></tr>
+        <tr><td><code>signature_title_ar</code></td><td>string</td><td>Signatory title in Arabic</td></tr>
+        <tr><td><code>contact_person_name</code></td><td>string</td><td>Primary contact name</td></tr>
+        <tr><td><code>contact_person_title</code></td><td>string</td><td>Contact person title</td></tr>
+        <tr><td><code>contact_person_mobile</code></td><td>string</td><td>11-digit Egyptian mobile number</td></tr>
+        <tr><td><code>contact_person_email</code></td><td>string</td><td>Contact email address</td></tr>
+        <tr><td><code>tax_id_document</code></td><td>file</td><td>Tax ID document (PDF)</td></tr>
+        <tr><td><code>commercial_registry_document</code></td><td>file</td><td>Commercial Registry document (PDF)</td></tr>
+        <tr><td><code>kyc_document</code></td><td>file</td><td>KYC document (PDF)</td></tr>
+        <tr><td><code>broker_of_record_document</code></td><td>file</td><td>Broker of Record document (PDF only)</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Success:</strong> <code>201 Created</code> — returns the full lead object.</p>
+    <p><strong>Errors:</strong></p>
+    <ul>
+      <li><code>400</code> — Missing required fields, invalid mobile number, or duplicate company name.</li>
+      <li><code>401</code> — Missing or invalid access token.</li>
+    </ul>
+
+    <h3 id="s2-2">2.2 List Leads</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> /leads/</div>
+    <p>Returns a paginated list of leads belonging to the authenticated broker. Ordered by newest first.</p>
+
+    <h3 id="s2-3">2.3 Get Lead Details</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> /leads/{lead_id}/</div>
+    <p>Returns the complete lead object with all fields and document URLs.</p>
+
+    <h3 id="s2-4">2.4 Update Lead</h3>
+    <div class="endpoint"><span class="method method-patch">PATCH</span> /leads/{lead_id}/</div>
+    <p><code>application/json</code> — Include only the fields you want to update.</p>
+
+    <h3 id="s2-5">2.5 Get Lead Document Status</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> /leads/{lead_id}/documents/</div>
+    <pre class="json">{
+  <span class="key">"lead_id"</span>: <span class="num">1</span>,
+  <span class="key">"company_english_name"</span>: <span class="str">"beyond-ib"</span>,
+  <span class="key">"documents"</span>: {
+    <span class="key">"tax_id_document"</span>: { <span class="key">"uploaded"</span>: <span class="bool">true</span>, <span class="key">"filename"</span>: <span class="str">"tax_id.pdf"</span> },
+    <span class="key">"commercial_registry_document"</span>: { <span class="key">"uploaded"</span>: <span class="bool">false</span>, <span class="key">"filename"</span>: <span class="null">null</span> },
+    <span class="key">"kyc_document"</span>: { <span class="key">"uploaded"</span>: <span class="bool">true</span>, <span class="key">"filename"</span>: <span class="str">"kyc.pdf"</span> },
+    <span class="key">"broker_of_record_document"</span>: { <span class="key">"uploaded"</span>: <span class="bool">false</span>, <span class="key">"filename"</span>: <span class="null">null</span> }
+  }
+}</pre>
+    <p>All 4 documents are required before any quotation for this lead can be submitted for issuance.</p>
+
+    <h3 id="s2-6">2.6 Upload Tax ID Document</h3>
+    <div class="endpoint"><span class="method method-post">POST</span> /leads/{lead_id}/upload-tax-id/</div>
+    <ul>
+      <li><strong>Field:</strong> <code>tax_id_document</code> (file, required)</li>
+      <li><strong>Auto-propagation:</strong> Copied to <code>tax_card</code> on all draft / Pending Client Approval quotations.</li>
+      <li><strong>Success:</strong> <code>200 OK</code></li>
+    </ul>
+
+    <h3 id="s2-7">2.7 Upload Commercial Registry</h3>
+    <div class="endpoint"><span class="method method-post">POST</span> /leads/{lead_id}/upload-commercial-registry/</div>
+    <ul>
+      <li><strong>Field:</strong> <code>commercial_registry_document</code> (file, required)</li>
+      <li><strong>Auto-propagation:</strong> Copied to <code>commercial_registry</code> on all draft / Pending Client Approval quotations.</li>
+      <li><strong>Success:</strong> <code>200 OK</code></li>
+    </ul>
+
+    <h3 id="s2-8">2.8 Upload KYC Document</h3>
+    <div class="endpoint"><span class="method method-post">POST</span> /leads/{lead_id}/upload-kyc/</div>
+    <ul>
+      <li><strong>Field:</strong> <code>kyc_document</code> (file, required)</li>
+      <li><strong>Auto-propagation:</strong> Copied to <code>kyc_document</code> on all draft / Pending Client Approval quotations.</li>
+      <li><strong>Success:</strong> <code>200 OK</code></li>
+    </ul>
+
+    <h3 id="s2-9">2.9 Upload Broker of Record</h3>
+    <div class="endpoint"><span class="method method-post">POST</span> /leads/{lead_id}/upload-broker-of-record/</div>
+    <ul>
+      <li><strong>Field:</strong> <code>broker_of_record_document</code> (file, required, <strong>PDF only</strong>)</li>
+      <li><strong>Auto-propagation:</strong> Runs after upload.</li>
+      <li><strong>Success:</strong> <code>200 OK</code></li>
+      <li><strong>Error:</strong> <code>400</code> if not a PDF file.</li>
+    </ul>
+
+    <hr>
+
+    <!-- ══════════ 3. QUOTATIONS ══════════ -->
+    <h2 id="quotations">3. Quotations</h2>
+    <p>Quotations are created from a Lead with an Excel file containing member data. A premium calculation is automatically generated. The quotation starts in <strong>draft</strong> status.</p>
+
+    <h3 id="s3-1">3.1 Create Quotation (Draft)</h3>
+    <div class="endpoint"><span class="method method-post">POST</span> /purchase-requests/</div>
+    <p><code>multipart/form-data</code></p>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>lead</code></td><td>integer</td><td>Yes</td><td>Lead ID</td></tr>
+        <tr><td><code>members_file</code></td><td>file</td><td>Yes</td><td>Excel file (.xlsx or .xls) with member data</td></tr>
+        <tr><td><code>inception_date</code></td><td>string</td><td>Yes</td><td>YYYY-MM-DD, must be tomorrow or later</td></tr>
+        <tr><td><code>notes</code></td><td>string</td><td>No</td><td>Optional notes</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Excel File Columns:</strong></p>
+    <table>
+      <thead><tr><th>Column</th><th>Required</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>Name</td><td>Yes</td><td>Member's full name</td></tr>
+        <tr><td>Date of Birth</td><td>Yes</td><td>DD-MM-YYYY, YYYY-MM-DD, DD/MM/YYYY, or Excel date</td></tr>
+        <tr><td>Medical Category</td><td>Yes</td><td>Category name (e.g., 'K100') or numeric ID</td></tr>
+        <tr><td>Life Category</td><td>No</td><td>Life insurance category name or ID (employees only)</td></tr>
+        <tr><td>Member Type</td><td>Yes</td><td><code>employee</code>, <code>spouse</code>, or <code>child</code></td></tr>
+        <tr><td>Country</td><td>No</td><td>Defaults to 'Egypt'</td></tr>
+        <tr><td>National ID</td><td>No</td><td>14-digit Egyptian National ID (can be filled later)</td></tr>
+        <tr><td>Staff ID</td><td>No</td><td>Company staff/employee ID (can be filled later)</td></tr>
+        <tr><td>Phone Number</td><td>No</td><td>11-digit mobile number (can be filled later)</td></tr>
+      </tbody>
+    </table>
+    <p><strong>What happens on creation:</strong></p>
+    <ol>
+      <li>Excel is parsed and validated (names, DOBs, categories, member types, age limits).</li>
+      <li>Premiums are calculated based on category age ranges effective at the inception date.</li>
+      <li>A quotation is created with all members and premium totals.</li>
+      <li>The quotation starts in <code>draft</code> status with <code>payment_frequency</code> defaulting to <code>annual</code>.</li>
+      <li>Existing lead documents (Tax ID, Commercial Registry, KYC) are copied to the quotation.</li>
+      <li>Lead fields (signature, contact info, address) are copied to the quotation.</li>
+    </ol>
+    <p><strong>Success:</strong> <code>201 Created</code> — returns the full quotation object.</p>
+    <p><strong>Error Responses (400 Bad Request):</strong></p>
+    <table>
+      <thead><tr><th>Error</th><th>Cause</th></tr></thead>
+      <tbody>
+        <tr><td><code>lead is required</code></td><td><code>lead</code> field not provided</td></tr>
+        <tr><td><code>members_file (Excel file) is required</code></td><td>No file uploaded</td></tr>
+        <tr><td><code>inception_date is required</code></td><td><code>inception_date</code> field not provided</td></tr>
+        <tr><td><code>members_file must be an Excel file (.xlsx or .xls)</code></td><td>Wrong file extension</td></tr>
+        <tr><td><code>Invalid inception_date format. Use YYYY-MM-DD.</code></td><td>Unparseable date string</td></tr>
+        <tr><td><code>Inception date cannot be backdated. Earliest allowed: {date}</code></td><td>Date is today or in the past</td></tr>
+        <tr><td><code>Lead must have a company name (company_english_name)</code></td><td>Lead missing company name</td></tr>
+        <tr><td><code>Excel file is missing a header row</code></td><td>Empty Excel file</td></tr>
+        <tr><td><code>Missing required columns: Name, Date of Birth, ...</code></td><td>Required columns not in header</td></tr>
+        <tr><td><code>Excel file has no member data rows</code></td><td>Header exists but no data rows</td></tr>
+        <tr><td><code>Minimum 5 members required</code></td><td>Fewer than 5 data rows</td></tr>
+        <tr><td><code>Maximum 300 members allowed per purchase request</code></td><td>Too many rows</td></tr>
+        <tr><td><code>Row N: Name is required</code></td><td>Empty name in a data row</td></tr>
+        <tr><td><code>Row N: Date of Birth is required</code></td><td>Missing DOB</td></tr>
+        <tr><td><code>Row N: Invalid date of birth format</code></td><td>Unparseable DOB value</td></tr>
+        <tr><td><code>Row N: Invalid member type "X"...</code></td><td>Not employee/spouse/child</td></tr>
+        <tr><td><code>Row N: Minimum age for employees is 18 (current age: X)</code></td><td>Employee or spouse under 18</td></tr>
+        <tr><td><code>Row N: Invalid or missing Medical Category</code></td><td>Category name/ID not found or inactive</td></tr>
+        <tr><td><code>Row N: No price found for age X in medical category "Y"</code></td><td>No age-range pricing configured</td></tr>
+        <tr><td><code>National ID validation failed for some members</code></td><td>14-digit format, DOB cross-check, or passport length. Returns <code>details</code> array with <code>member_index</code>, <code>member_name</code>, <code>error</code></td></tr>
+        <tr><td><code>Duplicate National IDs found in members</code></td><td>Same National ID used by multiple members. Returns <code>details</code> array</td></tr>
+        <tr><td><code>Staff ID validation failed for some members</code></td><td>Employee staff IDs not unique, or dependent doesn't match an employee. Returns <code>details</code> array. Dependents are auto-suffixed (e.g., EMP001-1)</td></tr>
+        <tr><td><code>Mobile number validation failed</code></td><td>Not exactly 11 digits. Returns <code>details</code> array with <code>member_index</code>, <code>member_name</code>, <code>error</code></td></tr>
+        <tr><td><code>Error processing Excel file: {details}</code></td><td>Corrupted or unreadable Excel file</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Other errors:</strong></p>
+    <ul>
+      <li><code>401</code> — Missing or invalid access token.</li>
+      <li><code>404</code> — <code>Lead not found or does not belong to you</code>.</li>
+    </ul>
+
+    <h3 id="s3-2">3.2 List Quotations</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> /purchase-requests/</div>
+    <p><strong>Query Parameters (optional):</strong></p>
+    <ul>
+      <li><code>status</code> — Filter by status: <code>draft</code>, <code>pending_documents</code> (Pending Client Approval), <code>pending_issuance</code>, <code>issued</code>, <code>rejected</code>, <code>expired</code>.</li>
+      <li><code>lead</code> — Filter by lead ID.</li>
+      <li><code>page</code> — Page number (default: 1).</li>
+      <li><code>page_size</code> — Items per page (default: 10).</li>
+    </ul>
+    <p>Returns a paginated list with <code>count</code>, <code>next</code>, <code>previous</code>, and <code>results</code>.</p>
+
+    <h3 id="s3-3">3.3 Get / Update Quotation Details</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> <span class="method method-patch">PATCH</span> /purchase-requests/{id}/</div>
+    <p><strong>GET</strong> returns the complete quotation object including all member details.</p>
+    <p><strong>PATCH</strong> (<code>application/json</code>) — Updatable fields (all optional):</p>
+    <ul>
+      <li><code>inception_date</code> (YYYY-MM-DD, must be tomorrow or later)</li>
+      <li><code>notes</code></li>
+      <li><code>signature_name_ar</code>, <code>signature_title_ar</code>, <code>company_address_ar</code></li>
+      <li><code>contact_person_name</code>, <code>contact_person_title</code>, <code>contact_person_mobile</code>, <code>contact_person_email</code></li>
+    </ul>
+
+    <h3 id="s3-4">3.4 Get Quotation Document Status</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> /purchase-requests/{id}/documents/</div>
+    <pre class="json">{
+  <span class="key">"purchase_request_id"</span>: <span class="num">1</span>,
+  <span class="key">"status"</span>: <span class="str">"draft"</span>,
+  <span class="key">"documents"</span>: {
+    <span class="key">"signed_document"</span>: {
+      <span class="key">"uploaded"</span>: <span class="bool">true</span>,
+      <span class="key">"id"</span>: <span class="num">5</span>,
+      <span class="key">"filename"</span>: <span class="str">"signed_policy.pdf"</span>,
+      <span class="key">"uploaded_at"</span>: <span class="str">"2026-02-08T10:30:00Z"</span>
+    },
+    <span class="key">"alteration_form"</span>: {
+      <span class="key">"uploaded"</span>: <span class="bool">false</span>,
+      <span class="key">"id"</span>: <span class="null">null</span>,
+      <span class="key">"filename"</span>: <span class="null">null</span>,
+      <span class="key">"uploaded_at"</span>: <span class="null">null</span>
+    },
+    <span class="key">"member_data_file"</span>: {
+      <span class="key">"uploaded"</span>: <span class="bool">true</span>,
+      <span class="key">"id"</span>: <span class="num">3</span>,
+      <span class="key">"filename"</span>: <span class="str">"members.xlsx"</span>,
+      <span class="key">"is_validated"</span>: <span class="bool">true</span>,
+      <span class="key">"uploaded_at"</span>: <span class="str">"2026-02-08T09:00:00Z"</span>
+    }
+  }
+}</pre>
+
+    <h3 id="s3-5">3.5 Get Members</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> /purchase-requests/{id}/members/</div>
+    <pre class="json">{
+  <span class="key">"purchase_request_id"</span>: <span class="num">1</span>,
+  <span class="key">"status"</span>: <span class="str">"draft"</span>,
+  <span class="key">"member_count"</span>: <span class="num">5</span>,
+  <span class="key">"members"</span>: [
+    {
+      <span class="key">"id"</span>: <span class="num">101</span>,
+      <span class="key">"name"</span>: <span class="str">"Ahmed Mohamed"</span>,
+      <span class="key">"date_of_birth"</span>: <span class="str">"1990-05-15"</span>,
+      <span class="key">"age"</span>: <span class="num">35</span>,
+      <span class="key">"country"</span>: <span class="str">"Egypt"</span>,
+      <span class="key">"member_type"</span>: <span class="str">"employee"</span>,
+      <span class="key">"category_id"</span>: <span class="num">1</span>,
+      <span class="key">"category_name"</span>: <span class="str">"K100"</span>,
+      <span class="key">"life_category_id"</span>: <span class="num">3</span>,
+      <span class="key">"life_category_name"</span>: <span class="str">"Life A"</span>,
+      <span class="key">"premium"</span>: <span class="str">"5000.00"</span>,
+      <span class="key">"life_premium"</span>: <span class="str">"1200.00"</span>,
+      <span class="key">"national_id"</span>: <span class="str">""</span>,
+      <span class="key">"staff_id"</span>: <span class="str">""</span>,
+      <span class="key">"mobile_number"</span>: <span class="str">""</span>
+    }
+  ]
+}</pre>
+    <p>Empty strings for <code>national_id</code>, <code>staff_id</code>, or <code>mobile_number</code> indicate data that still needs to be provided before issuance.</p>
+
+    <h3 id="s3-6">3.6 Update Members</h3>
+    <div class="endpoint"><span class="method method-patch">PATCH</span> /purchase-requests/{id}/members/</div>
+    <p><code>application/json</code> — Only 3 fields can be updated: <code>national_id</code>, <code>staff_id</code>, <code>mobile_number</code>.</p>
+    <pre class="json">{
+  <span class="key">"members"</span>: [
+    {
+      <span class="key">"id"</span>: <span class="num">1234</span>,
+      <span class="key">"national_id"</span>: <span class="str">"28505031234568"</span>,
+      <span class="key">"staff_id"</span>: <span class="str">"EMP001"</span>,
+      <span class="key">"mobile_number"</span>: <span class="str">"01012345678"</span>
+    }
+  ]
+}</pre>
+    <p><strong>Status-based rules:</strong></p>
+    <ul>
+      <li><strong>Draft:</strong> All 3 fields can be freely set, changed, or cleared.</li>
+      <li><strong>Pending Client Approval:</strong> Only empty fields can be filled. Already-filled fields are locked.</li>
+      <li><strong>Other statuses:</strong> Updates are completely blocked.</li>
+    </ul>
+    <p><strong>Success:</strong> <code>200 OK</code> — <code>{"message": "Successfully updated 2 members", "updated_count": 2}</code></p>
+
+    <h3 id="s3-7">3.7 First Premium Breakdown</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> /purchase-requests/{id}/first-premium-breakdown/</div>
+    <p>Retrieve the regulatory-fee breakdown for a quotation, divided by the current payment frequency.</p>
+    <pre class="json">{
+  <span class="key">"purchase_request_id"</span>: <span class="num">1</span>,
+  <span class="key">"payment_frequency"</span>: <span class="str">"annual"</span>,
+  <span class="key">"net_premium"</span>: <span class="str">"120000.00"</span>,
+  <span class="key">"total_tax"</span>: <span class="str">"5460.00"</span>,
+  <span class="key">"total_premium"</span>: <span class="str">"125460.00"</span>,
+  <span class="key">"fees"</span>: [
+    { <span class="key">"name"</span>: <span class="str">"FRA Approval Fees"</span>, <span class="key">"percentage"</span>: <span class="str">"0.10"</span>, <span class="key">"amount"</span>: <span class="str">"120.00"</span> },
+    { <span class="key">"name"</span>: <span class="str">"FRA Development Stamp"</span>, <span class="key">"percentage"</span>: <span class="null">null</span>, <span class="key">"amount"</span>: <span class="str">"60.00"</span> },
+    { <span class="key">"name"</span>: <span class="str">"FRA Provision Fees"</span>, <span class="key">"percentage"</span>: <span class="str">"0.20"</span>, <span class="key">"amount"</span>: <span class="str">"240.00"</span> },
+    { <span class="key">"name"</span>: <span class="str">"Proportional Stamp"</span>, <span class="key">"percentage"</span>: <span class="str">"1.50"</span>, <span class="key">"amount"</span>: <span class="str">"1800.00"</span> },
+    { <span class="key">"name"</span>: <span class="str">"Supervisory Fees"</span>, <span class="key">"percentage"</span>: <span class="str">"0.25"</span>, <span class="key">"amount"</span>: <span class="str">"300.00"</span> }
+  ]
+}</pre>
+    <p><strong>Fee fields:</strong></p>
+    <table>
+      <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>name</code></td><td>string</td><td>Display name of the fee</td></tr>
+        <tr><td><code>percentage</code></td><td>string or null</td><td>Percentage rate. <code>null</code> for fixed-amount fees</td></tr>
+        <tr><td><code>amount</code></td><td>string</td><td>Calculated fee amount for the current payment frequency</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Fee name mapping:</strong></p>
+    <table>
+      <thead><tr><th>Fee Name</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>FRA Approval Fees</strong></td><td>FRA approval charge (percentage-based)</td></tr>
+        <tr><td><strong>Supervisory Fees</strong></td><td>Regulatory supervisory charge (percentage-based)</td></tr>
+        <tr><td><strong>FRA Development Stamp</strong></td><td>Fixed issuing fee (no percentage)</td></tr>
+        <tr><td><strong>Proportional Stamp</strong></td><td>Combined medical + life stamp duties (summed percentage)</td></tr>
+        <tr><td><strong>FRA Provision Fees</strong></td><td>Policyholder guarantee fund contribution (percentage-based)</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Payment frequency effect:</strong> All amounts are divided by the frequency divisor:</p>
+    <ul>
+      <li><code>annual</code> → ÷ 1</li>
+      <li><code>semi_annual</code> → ÷ 2</li>
+      <li><code>quarterly</code> → ÷ 4</li>
+    </ul>
+
+    <hr>
+
+    <!-- ══════════ 4. PAYMENT & REIMBURSEMENT ══════════ -->
+    <h2 id="payment">4. Payment &amp; Reimbursement</h2>
+
+    <h3 id="s4-1">4.1 Get Payment Frequency</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> /purchase-requests/{id}/payment-frequency/</div>
+    <pre class="json">{
+  <span class="key">"purchase_request_id"</span>: <span class="num">1</span>,
+  <span class="key">"current_payment_frequency"</span>: <span class="str">"annual"</span>,
+  <span class="key">"net_premium"</span>: <span class="str">"250000.00"</span>,
+  <span class="key">"allowed_options"</span>: [<span class="str">"annual"</span>, <span class="str">"semi_annual"</span>]
+}</pre>
+    <p><strong>Allowed options based on net premium:</strong></p>
+    <table>
+      <thead><tr><th>Net Premium Range</th><th>Allowed Options</th></tr></thead>
+      <tbody>
+        <tr><td>&lt; 150,000 EGP</td><td><code>["annual"]</code> only</td></tr>
+        <tr><td>150,000 – 349,999 EGP</td><td><code>["annual", "semi_annual"]</code></td></tr>
+        <tr><td>≥ 350,000 EGP</td><td><code>["annual", "semi_annual", "quarterly"]</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="s4-2">4.2 Update Payment Frequency</h3>
+    <div class="endpoint"><span class="method method-patch">PATCH</span> /purchase-requests/{id}/payment-frequency/</div>
+    <p>Editable during <code>draft</code> and <code>Pending Client Approval</code> only.</p>
+    <pre class="json">{ <span class="key">"payment_frequency"</span>: <span class="str">"semi_annual"</span> }</pre>
+
+    <h3 id="s4-3">4.3 Get Reimbursement</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> /purchase-requests/{id}/reimbursement/</div>
+    <p>Returns current reimbursement type and bank fields. Available for any status (read-only).</p>
+
+    <h3 id="s4-4">4.4 Set Reimbursement (Employee)</h3>
+    <div class="endpoint"><span class="method method-patch">PATCH</span> /purchase-requests/{id}/reimbursement/</div>
+    <p>Editable during <code>draft</code> and <code>Pending Client Approval</code> only.</p>
+    <pre class="json">{ <span class="key">"reimbursement_type"</span>: <span class="str">"employee"</span> }</pre>
+    <p>No bank details needed. If previously set, bank fields are cleared.</p>
+
+    <h3 id="s4-5">4.5 Set Reimbursement (Company)</h3>
+    <div class="endpoint"><span class="method method-patch">PATCH</span> /purchase-requests/{id}/reimbursement/</div>
+    <p>All 6 bank fields are required when type is <code>company</code>:</p>
+    <pre class="json">{
+  <span class="key">"reimbursement_type"</span>: <span class="str">"company"</span>,
+  <span class="key">"reimbursement_bank_name"</span>: <span class="str">"National Bank of Egypt"</span>,
+  <span class="key">"reimbursement_bank_branch_name"</span>: <span class="str">"Cairo Branch"</span>,
+  <span class="key">"reimbursement_account_name"</span>: <span class="str">"beyond-ib"</span>,
+  <span class="key">"reimbursement_account_number"</span>: <span class="str">"123456789012"</span>,
+  <span class="key">"reimbursement_swift_code"</span>: <span class="str">"NBEGEGCX"</span>,
+  <span class="key">"reimbursement_iban"</span>: <span class="str">"EG123456789012345678901234"</span>
+}</pre>
+
+    <hr>
+
+    <!-- ══════════ 5. DOCUMENT UPLOADS ══════════ -->
+    <h2 id="uploads">5. Document Uploads</h2>
+    <p>All uploads are allowed during <strong>draft</strong> and <strong>Pending Client Approval</strong> status.</p>
+
+    <h3 id="s5-1">5.1 Upload Signed Document</h3>
+    <div class="endpoint"><span class="method method-post">POST</span> /purchase-requests/{id}/upload-signed-document/</div>
+    <ul>
+      <li><strong>Field:</strong> <code>signed_pdf</code> (file, required, PDF only)</li>
+      <li><strong>Required for issuance.</strong></li>
+      <li>Re-uploading replaces the existing document.</li>
+      <li><strong>Success:</strong> <code>201 Created</code></li>
+    </ul>
+
+    <h3 id="s5-2">5.2 Upload Alteration Form</h3>
+    <div class="endpoint"><span class="method method-post">POST</span> /purchase-requests/{id}/upload-alteration-form/</div>
+    <ul>
+      <li><strong>Field:</strong> <code>alterations_pdf</code> (file, required, PDF only)</li>
+      <li><strong>Optional</strong> — not required for issuance.</li>
+      <li><strong>GET</strong> on the same URL returns alteration form status.</li>
+      <li><strong>Success:</strong> <code>201 Created</code></li>
+    </ul>
+
+    <h3 id="s5-3">5.3 Upload Member Data File</h3>
+    <div class="endpoint"><span class="method method-post">POST</span> /purchase-requests/{id}/upload-member-data/</div>
+    <ul>
+      <li><strong>Field:</strong> <code>uploaded_file</code> (file, required, .xlsx or .xls)</li>
+      <li>Supplementary upload for admin review. Original member data is created during quotation creation (3.1).</li>
+      <li><strong>Success:</strong> <code>201 Created</code></li>
+    </ul>
+
+    <hr>
+
+    <!-- ══════════ 6. STATUS TRANSITIONS ══════════ -->
+    <h2 id="transitions">6. Status Transitions</h2>
+
+    <h3 id="s6-1">6.1 Submit for Approval (Draft → Pending Client Approval)</h3>
+    <div class="endpoint"><span class="method method-post">POST</span> /purchase-requests/{id}/submit-for-approval/</div>
+    <p><strong>Optional body (JSON):</strong></p>
+    <pre class="json">{ <span class="key">"inception_date"</span>: <span class="str">"2026-03-01"</span> }</pre>
+    <p><strong>Prerequisites:</strong></p>
+    <ul>
+      <li>Quotation must be in <code>draft</code> status.</li>
+      <li><code>inception_date</code> must be set (either already on the quotation or provided in this request).</li>
+    </ul>
+    <p><strong>Success:</strong> <code>200 OK</code> — returns the full quotation object with status <code>pending_documents</code> (Pending Client Approval).</p>
+    <p><strong>After this transition:</strong></p>
+    <ul>
+      <li>Member data editing is restricted: only empty fields can be filled.</li>
+      <li>Document uploads, payment frequency, and reimbursement can still be changed.</li>
+    </ul>
+
+    <h3 id="s6-2">6.2 Submit for Issuance (Pending Client Approval → Pending Issuance)</h3>
+    <div class="endpoint"><span class="method method-post">POST</span> /purchase-requests/{id}/submit-issuance/</div>
+    <p><strong>No request body required.</strong> Validates ALL prerequisites at once and returns every blocker found.</p>
+    <p><strong>Prerequisites (ALL must be met):</strong></p>
+    <ol>
+      <li>Status must be <code>pending_documents</code> (Pending Client Approval).</li>
+      <li>Quotation must be associated with a lead.</li>
+      <li><strong>Required fields</strong> must be filled (on either the lead or the quotation):
+        <code>signature_name_ar</code>, <code>signature_title_ar</code>, <code>company_address_ar</code>,
+        <code>contact_person_name</code>, <code>contact_person_title</code>, <code>contact_person_mobile</code>, <code>contact_person_email</code></li>
+      <li><strong>All 4 lead documents</strong> uploaded (Tax ID, Commercial Registry, KYC, Broker of Record).</li>
+      <li><strong>Signed document</strong> uploaded to the quotation.</li>
+      <li><strong>Reimbursement</strong> configured (type set; if <code>company</code>, all 6 bank fields filled).</li>
+      <li><strong>All members</strong> must have <code>national_id</code>, <code>staff_id</code>, and <code>mobile_number</code>.</li>
+    </ol>
+    <p><strong>Success:</strong> <code>200 OK</code> — returns quotation with status <code>pending_issuance</code>.</p>
+    <p><strong>Failure (400 — blockers found):</strong></p>
+    <pre class="json">{
+  <span class="key">"error"</span>: <span class="str">"Cannot submit for issuance. Please resolve the following issues:"</span>,
+  <span class="key">"blockers"</span>: [
+    {
+      <span class="key">"type"</span>: <span class="str">"missing_fields"</span>,
+      <span class="key">"message"</span>: <span class="str">"Required fields are missing on the lead or quotation."</span>,
+      <span class="key">"details"</span>: [<span class="str">"Signatory name in Arabic"</span>, <span class="str">"Contact person email"</span>]
+    },
+    {
+      <span class="key">"type"</span>: <span class="str">"missing_documents"</span>,
+      <span class="key">"message"</span>: <span class="str">"Required documents must be uploaded to the lead."</span>,
+      <span class="key">"details"</span>: [<span class="str">"KYC document"</span>, <span class="str">"Broker of Record document"</span>]
+    },
+    {
+      <span class="key">"type"</span>: <span class="str">"missing_signed_document"</span>,
+      <span class="key">"message"</span>: <span class="str">"Signed and stamped PDF is required."</span>
+    },
+    {
+      <span class="key">"type"</span>: <span class="str">"missing_reimbursement"</span>,
+      <span class="key">"message"</span>: <span class="str">"Reimbursement details must be completed."</span>
+    },
+    {
+      <span class="key">"type"</span>: <span class="str">"incomplete_member_data"</span>,
+      <span class="key">"message"</span>: <span class="str">"Some members are missing required information."</span>,
+      <span class="key">"details"</span>: [<span class="str">"Row 1: Ahmed Mohamed - Missing: National ID, Staff ID"</span>]
+    }
+  ]
+}</pre>
+
+    <hr>
+
+    <!-- ══════════ WORKFLOW ══════════ -->
+    <h2 id="workflow">Workflow Summary</h2>
+    <ol>
+      <li><strong>Login</strong> → get <code>access_token</code></li>
+      <li><strong>Create Lead</strong> (with optional doc uploads)</li>
+      <li><strong>Upload</strong> remaining lead documents (Tax ID, Commercial Registry, KYC, Broker of Record)</li>
+      <li><strong>Create Quotation</strong> (multipart with Excel members file) → <span class="status status-draft">draft</span></li>
+      <li><strong>Set Payment Frequency</strong> (optional, defaults to annual)</li>
+      <li><strong>Set Reimbursement</strong> (required before issuance)</li>
+      <li><strong>Upload Signed Document</strong> (PDF, required)</li>
+      <li><strong>Upload Alteration Form</strong> (optional, PDF)</li>
+      <li><strong>Update Members</strong> (national_id, staff_id, mobile_number)</li>
+      <li><strong>Submit for Approval</strong> → <span class="status status-pending">Pending Client Approval</span></li>
+      <li><strong>Submit for Issuance</strong> → <span class="status status-pending">pending issuance</span></li>
+    </ol>
+
+    <hr>
+
+    <!-- ══════════ STATUS FLOW ══════════ -->
+    <h2 id="status-flow">Status Flow</h2>
+    <div class="flow">
+      <span class="flow-node status-draft">Draft</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-node status-pending">Pending Client Approval</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-node status-pending">Pending Issuance</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-node status-issued">Issued</span>
+    </div>
+    <table>
+      <thead><tr><th>Status</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><span class="status status-draft">draft</span></td><td>Initial state after quotation creation</td></tr>
+        <tr><td><span class="status status-pending">Pending Client Approval</span></td><td>Submitted for client approval; documents and member data can still be updated</td></tr>
+        <tr><td><span class="status status-pending">pending_issuance</span></td><td>All documents submitted, waiting for admin to issue policy</td></tr>
+        <tr><td><span class="status status-issued">issued</span></td><td>Policy has been issued</td></tr>
+        <tr><td><span class="status status-rejected">rejected</span></td><td>Quotation was rejected</td></tr>
+        <tr><td><span class="status status-expired">expired</span></td><td>Auto-expired (30 days from creation)</td></tr>
+      </tbody>
+    </table>
+
+    <hr>
+
+    <!-- ══════════ KEY FIELDS ══════════ -->
+    <h2>Key Response Fields</h2>
+    <table>
+      <thead><tr><th>Field</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>expiration_date</code></td><td><code>inception_date + 30 days</code>. Returns <code>null</code> once status reaches <code>pending_issuance</code>, <code>issued</code>, <code>rejected</code>, or <code>expired</code></td></tr>
+        <tr><td><code>coverage_start_date</code></td><td>Same as <code>inception_date</code></td></tr>
+        <tr><td><code>coverage_end_date</code></td><td><code>inception_date + 365 days</code></td></tr>
+      </tbody>
+    </table>
+
+    <hr>
+
+    <!-- ══════════ AUTO-PROPAGATION ══════════ -->
+    <h2>Document Auto-Propagation</h2>
+    <div class="callout">
+      <p>When a document is uploaded to a Lead (either during creation or via individual upload endpoints), it is automatically copied to all quotations of that lead that are in <code>draft</code> or <code>Pending Client Approval</code> status. Quotations in <code>pending_issuance</code> or later statuses are <strong>not</strong> affected.</p>
+    </div>
+
+    <hr>
+
+    <!-- ══════════ ERROR FORMAT ══════════ -->
+    <h2>Error Response Format</h2>
+    <p>All error responses follow this format:</p>
+    <pre class="json">{
+  <span class="key">"error"</span>: <span class="str">"Human-readable error message"</span>,
+  <span class="key">"details"</span>: [<span class="str">"Optional array of specific error details"</span>],
+  <span class="key">"missing_fields"</span>: [<span class="str">"Optional array of missing field names"</span>]
+}</pre>
+
+    <hr>
+
+    <!-- ══════════ ENDPOINT REF ══════════ -->
+    <h2 id="endpoint-ref">Complete Endpoint Reference</h2>
+    <table>
+      <thead><tr><th>#</th><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>1.1</td><td><span class="method method-post">POST</span></td><td><code>/auth/login/</code></td><td>Login</td></tr>
+        <tr><td>1.2</td><td><span class="method method-post">POST</span></td><td><code>/auth/token/refresh/</code></td><td>Refresh token</td></tr>
+        <tr><td>2.1</td><td><span class="method method-post">POST</span></td><td><code>/leads/</code></td><td>Create lead (with optional docs)</td></tr>
+        <tr><td>2.2</td><td><span class="method method-get">GET</span></td><td><code>/leads/</code></td><td>List leads</td></tr>
+        <tr><td>2.3</td><td><span class="method method-get">GET</span></td><td><code>/leads/{id}/</code></td><td>Get lead details</td></tr>
+        <tr><td>2.4</td><td><span class="method method-patch">PATCH</span></td><td><code>/leads/{id}/</code></td><td>Update lead</td></tr>
+        <tr><td>2.5</td><td><span class="method method-get">GET</span></td><td><code>/leads/{id}/documents/</code></td><td>Get lead document status</td></tr>
+        <tr><td>2.6</td><td><span class="method method-post">POST</span></td><td><code>/leads/{id}/upload-tax-id/</code></td><td>Upload Tax ID document</td></tr>
+        <tr><td>2.7</td><td><span class="method method-post">POST</span></td><td><code>/leads/{id}/upload-commercial-registry/</code></td><td>Upload Commercial Registry</td></tr>
+        <tr><td>2.8</td><td><span class="method method-post">POST</span></td><td><code>/leads/{id}/upload-kyc/</code></td><td>Upload KYC document</td></tr>
+        <tr><td>2.9</td><td><span class="method method-post">POST</span></td><td><code>/leads/{id}/upload-broker-of-record/</code></td><td>Upload Broker of Record (PDF)</td></tr>
+        <tr><td>3.1</td><td><span class="method method-post">POST</span></td><td><code>/purchase-requests/</code></td><td>Create quotation (draft)</td></tr>
+        <tr><td>3.2</td><td><span class="method method-get">GET</span></td><td><code>/purchase-requests/</code></td><td>List quotations</td></tr>
+        <tr><td>3.3</td><td><span class="method method-get">GET</span> <span class="method method-patch">PATCH</span></td><td><code>/purchase-requests/{id}/</code></td><td>Get/update quotation details</td></tr>
+        <tr><td>3.4</td><td><span class="method method-get">GET</span></td><td><code>/purchase-requests/{id}/documents/</code></td><td>Get quotation document status</td></tr>
+        <tr><td>3.5</td><td><span class="method method-get">GET</span></td><td><code>/purchase-requests/{id}/members/</code></td><td>Get members</td></tr>
+        <tr><td>3.6</td><td><span class="method method-patch">PATCH</span></td><td><code>/purchase-requests/{id}/members/</code></td><td>Update members (3 fields)</td></tr>
+        <tr><td>3.7</td><td><span class="method method-get">GET</span></td><td><code>/purchase-requests/{id}/first-premium-breakdown/</code></td><td>First premium breakdown</td></tr>
+        <tr><td>4.1</td><td><span class="method method-get">GET</span></td><td><code>/purchase-requests/{id}/payment-frequency/</code></td><td>Get payment frequency</td></tr>
+        <tr><td>4.2</td><td><span class="method method-patch">PATCH</span></td><td><code>/purchase-requests/{id}/payment-frequency/</code></td><td>Update payment frequency</td></tr>
+        <tr><td>4.3</td><td><span class="method method-get">GET</span></td><td><code>/purchase-requests/{id}/reimbursement/</code></td><td>Get reimbursement</td></tr>
+        <tr><td>4.4</td><td><span class="method method-patch">PATCH</span></td><td><code>/purchase-requests/{id}/reimbursement/</code></td><td>Set reimbursement (employee)</td></tr>
+        <tr><td>4.5</td><td><span class="method method-patch">PATCH</span></td><td><code>/purchase-requests/{id}/reimbursement/</code></td><td>Set reimbursement (company)</td></tr>
+        <tr><td>5.1</td><td><span class="method method-post">POST</span></td><td><code>/purchase-requests/{id}/upload-signed-document/</code></td><td>Upload signed document</td></tr>
+        <tr><td>5.2</td><td><span class="method method-get">GET</span> <span class="method method-post">POST</span></td><td><code>/purchase-requests/{id}/upload-alteration-form/</code></td><td>Alteration form</td></tr>
+        <tr><td>5.3</td><td><span class="method method-post">POST</span></td><td><code>/purchase-requests/{id}/upload-member-data/</code></td><td>Upload member data file</td></tr>
+        <tr><td>6.1</td><td><span class="method method-post">POST</span></td><td><code>/purchase-requests/{id}/submit-for-approval/</code></td><td>Submit for approval</td></tr>
+        <tr><td>6.2</td><td><span class="method method-post">POST</span></td><td><code>/purchase-requests/{id}/submit-issuance/</code></td><td>Submit for issuance</td></tr>
+      </tbody>
+    </table>
+
+    <!-- ── Footer ── -->
+    <div class="footer">
+      <a href="https://www.kaf.com.eg/" target="_blank" rel="noopener noreferrer" title="Visit KAF" style="display:block; width:40px; margin:0 auto 12px;">
+        <img src="https://cdn.prod.website-files.com/66cda1fb23a068f9c28860b2/66dc1d41973146c2ff7c3881_LOGO.avif" alt="KAF" style="width:40px; opacity:0.4; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='0.4'">
+      </a>
+      KAF Life Insurance &copy; 2026 — SME Brokerage API V1
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ═══ BACK TO TOP ═══ -->
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0})" title="Back to top">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<script>
+// ── Scroll-spy + progress bar + back-to-top ──
+const sections = document.querySelectorAll('h2[id], h3[id]');
+const navLinks = document.querySelectorAll('.sidebar nav a[href^="#"]');
+const scrollBar = document.getElementById('scrollBar');
+const backToTop = document.getElementById('backToTop');
+
+window.addEventListener('scroll', () => {
+  // Scroll progress
+  const h = document.documentElement;
+  const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+  scrollBar.style.width = pct + '%';
+
+  // Back-to-top visibility
+  backToTop.classList.toggle('visible', window.scrollY > 400);
+
+  // Active nav link
+  let current = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) current = s.id; });
+  navLinks.forEach(a => {
+    a.classList.remove('active');
+    if (a.getAttribute('href') === '#' + current) a.classList.add('active');
+  });
+});
+
+// ── Copy buttons + JSON labels on code blocks ──
+document.querySelectorAll('pre.json').forEach(pre => {
+  // Copy button
+  const btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = 'Copy';
+  btn.addEventListener('click', () => {
+    const text = pre.textContent.replace('Copy', '').replace('JSON', '').trim();
+    navigator.clipboard.writeText(text);
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  });
+  pre.appendChild(btn);
+
+  // JSON label
+  const label = document.createElement('span');
+  label.className = 'code-label';
+  label.textContent = 'JSON';
+  pre.appendChild(label);
+});
+
+// ── Section fade-in on scroll ──
+const fadeEls = document.querySelectorAll('h2, h3, .callout, .endpoint, table, pre, .flow');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+fadeEls.forEach(el => { el.classList.add('fade-in'); observer.observe(el); });
+
+// ── Base URL click-to-copy ──
+const baseUrl = document.querySelector('.hero .base-url');
+if (baseUrl) {
+  baseUrl.addEventListener('click', () => {
+    navigator.clipboard.writeText('https://appstaging.kaf.com.eg/sme/api/v1/');
+    const hint = baseUrl.querySelector('.copy-hint');
+    if (hint) { hint.textContent = 'Copied!'; hint.style.opacity = '1'; setTimeout(() => { hint.textContent = 'click to copy'; hint.style.opacity = ''; }, 1500); }
+  });
+}
+</script>
+</body>
+</html>
