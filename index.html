@@ -627,14 +627,126 @@
     letter-spacing: 1px;
   }
 
+  /* ── Mobile hamburger button ── */
+  .mobile-menu-btn {
+    display: none;
+    position: fixed; top: 12px; left: 12px; z-index: 300;
+    width: 44px; height: 44px;
+    background: var(--kaf-purple);
+    color: #fff;
+    border: none; border-radius: 10px;
+    cursor: pointer;
+    align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(107,2,125,0.3);
+    transition: all 0.3s;
+  }
+  .mobile-menu-btn:hover { background: var(--kaf-purple-light); }
+  .mobile-menu-btn svg { pointer-events: none; }
+  .mobile-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .mobile-overlay.visible { opacity: 1; }
+
   /* ── Responsive ── */
   @media (max-width: 900px) {
-    .sidebar, .scroll-progress { display: none; }
+    html, body { overflow-x: hidden; }
+    .scroll-progress { display: none; }
     .main { margin-left: 0; }
-    .hero { padding: 32px 24px; }
-    .hero h1 { font-size: 26px; }
-    .content { padding: 24px; }
-    .back-to-top { bottom: 16px; right: 16px; }
+
+    /* Sidebar as slide-in drawer */
+    .sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+      z-index: 200;
+    }
+    .sidebar.open { transform: translateX(0); }
+    .mobile-menu-btn { display: flex; }
+
+    /* Hero */
+    .hero { padding: 60px 20px 32px; }
+    .hero h1 { font-size: 22px; word-break: break-word; }
+    .hero .subtitle { font-size: 14px; }
+    .hero .version-badge { font-size: 10px; padding: 3px 10px; margin-left: 6px; }
+    .hero .base-url {
+      flex-wrap: wrap;
+      font-size: 11px;
+      padding: 10px 14px;
+      gap: 8px;
+      width: 100%;
+      word-break: break-all;
+    }
+    .hero .base-url .copy-hint { display: none; }
+    .btn-download { padding: 12px 20px; font-size: 13px; }
+
+    /* Content */
+    .content { padding: 20px 16px 60px; max-width: 100%; }
+    h2 { font-size: 20px; margin-top: 36px; word-break: break-word; }
+    h3 { font-size: 16px; word-break: break-word; }
+
+    /* Endpoint badges */
+    .endpoint {
+      display: flex;
+      flex-wrap: wrap;
+      font-size: 11px;
+      padding: 8px 12px;
+      gap: 6px;
+      word-break: break-all;
+      white-space: normal;
+      max-width: 100%;
+    }
+
+    /* Method badges - prevent shrinking */
+    .method {
+      flex-shrink: 0;
+      white-space: nowrap;
+      font-size: 10px;
+      padding: 2px 8px;
+    }
+
+    /* Tables - scrollable container */
+    table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      max-width: 100%;
+    }
+    thead, tbody { display: table; width: 100%; table-layout: fixed; }
+    thead th { font-size: 10px; padding: 8px 10px; white-space: normal; word-break: break-word; }
+    tbody td { font-size: 11px; padding: 8px 10px; white-space: normal; word-break: break-word; }
+    td code, th code { font-size: 10px; word-break: break-all; }
+
+    /* Code blocks */
+    pre { font-size: 11px; padding: 14px 12px; word-break: break-all; white-space: pre-wrap; }
+
+    /* Inline code */
+    p code, li code, strong code { font-size: 11.5px; word-break: break-all; }
+
+    /* Flow diagram */
+    .flow { flex-direction: column; align-items: stretch; padding: 16px; gap: 6px; }
+    .flow-node { text-align: center; font-size: 12px; padding: 10px 16px; }
+    .flow-arrow { transform: rotate(90deg); text-align: center; font-size: 18px; }
+
+    /* Lists */
+    ul, ol { padding-left: 16px; }
+
+    /* Footer */
+    .footer { padding: 28px 16px; font-size: 12px; }
+
+    /* Back to top */
+    .back-to-top { bottom: 16px; right: 16px; width: 38px; height: 38px; }
+
+    /* Status badges */
+    .status { font-size: 10px; padding: 3px 8px; }
+
+    /* Callout */
+    .callout { padding: 16px; }
+    .callout h3 { font-size: 14px; }
+    .callout p { font-size: 13px; }
   }
 
   /* ── Print ── */
@@ -649,6 +761,12 @@
 </style>
 </head>
 <body>
+
+<!-- ═══ MOBILE MENU ═══ -->
+<button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+<div class="mobile-overlay" id="mobileOverlay"></div>
 
 <!-- ═══ SCROLL PROGRESS ═══ -->
 <div class="scroll-progress"><div class="scroll-progress-bar" id="scrollBar"></div></div>
@@ -1450,6 +1568,31 @@ const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
 }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 fadeEls.forEach(el => { el.classList.add('fade-in'); observer.observe(el); });
+
+// ── Mobile menu toggle ──
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const mobileOverlay = document.getElementById('mobileOverlay');
+const sidebar = document.querySelector('.sidebar');
+
+function openMobileMenu() {
+  sidebar.classList.add('open');
+  mobileOverlay.style.display = 'block';
+  requestAnimationFrame(() => mobileOverlay.classList.add('visible'));
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileMenu() {
+  sidebar.classList.remove('open');
+  mobileOverlay.classList.remove('visible');
+  setTimeout(() => { mobileOverlay.style.display = 'none'; }, 300);
+  document.body.style.overflow = '';
+}
+mobileMenuBtn.addEventListener('click', () => {
+  sidebar.classList.contains('open') ? closeMobileMenu() : openMobileMenu();
+});
+mobileOverlay.addEventListener('click', closeMobileMenu);
+document.querySelectorAll('.sidebar nav a[href^="#"]').forEach(a => {
+  a.addEventListener('click', closeMobileMenu);
+});
 
 // ── Base URL click-to-copy ──
 const baseUrl = document.querySelector('.hero .base-url');
