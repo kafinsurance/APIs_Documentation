@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KAF — SME Brokerage API V1</title>
-<link rel="icon" href="https://cdn.prod.website-files.com/66cda1fb23a068f9c28860b2/66dc1d41973146c2ff7c3881_LOGO.avif">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -627,126 +626,14 @@
     letter-spacing: 1px;
   }
 
-  /* ── Mobile hamburger button ── */
-  .mobile-menu-btn {
-    display: none;
-    position: fixed; top: 12px; left: 12px; z-index: 300;
-    width: 44px; height: 44px;
-    background: var(--kaf-purple);
-    color: #fff;
-    border: none; border-radius: 10px;
-    cursor: pointer;
-    align-items: center; justify-content: center;
-    box-shadow: 0 4px 16px rgba(107,2,125,0.3);
-    transition: all 0.3s;
-  }
-  .mobile-menu-btn:hover { background: var(--kaf-purple-light); }
-  .mobile-menu-btn svg { pointer-events: none; }
-  .mobile-overlay {
-    display: none;
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 99;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .mobile-overlay.visible { opacity: 1; }
-
   /* ── Responsive ── */
   @media (max-width: 900px) {
-    html, body { overflow-x: hidden; }
-    .scroll-progress { display: none; }
+    .sidebar, .scroll-progress { display: none; }
     .main { margin-left: 0; }
-
-    /* Sidebar as slide-in drawer */
-    .sidebar {
-      transform: translateX(-100%);
-      transition: transform 0.3s cubic-bezier(.4,0,.2,1);
-      z-index: 200;
-    }
-    .sidebar.open { transform: translateX(0); }
-    .mobile-menu-btn { display: flex; }
-
-    /* Hero */
-    .hero { padding: 60px 20px 32px; }
-    .hero h1 { font-size: 22px; word-break: break-word; }
-    .hero .subtitle { font-size: 14px; }
-    .hero .version-badge { font-size: 10px; padding: 3px 10px; margin-left: 6px; }
-    .hero .base-url {
-      flex-wrap: wrap;
-      font-size: 11px;
-      padding: 10px 14px;
-      gap: 8px;
-      width: 100%;
-      word-break: break-all;
-    }
-    .hero .base-url .copy-hint { display: none; }
-    .btn-download { padding: 12px 20px; font-size: 13px; }
-
-    /* Content */
-    .content { padding: 20px 16px 60px; max-width: 100%; }
-    h2 { font-size: 20px; margin-top: 36px; word-break: break-word; }
-    h3 { font-size: 16px; word-break: break-word; }
-
-    /* Endpoint badges */
-    .endpoint {
-      display: flex;
-      flex-wrap: wrap;
-      font-size: 11px;
-      padding: 8px 12px;
-      gap: 6px;
-      word-break: break-all;
-      white-space: normal;
-      max-width: 100%;
-    }
-
-    /* Method badges - prevent shrinking */
-    .method {
-      flex-shrink: 0;
-      white-space: nowrap;
-      font-size: 10px;
-      padding: 2px 8px;
-    }
-
-    /* Tables - scrollable container */
-    table {
-      display: block;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      max-width: 100%;
-    }
-    thead, tbody { display: table; width: 100%; table-layout: fixed; }
-    thead th { font-size: 10px; padding: 8px 10px; white-space: normal; word-break: break-word; }
-    tbody td { font-size: 11px; padding: 8px 10px; white-space: normal; word-break: break-word; }
-    td code, th code { font-size: 10px; word-break: break-all; }
-
-    /* Code blocks */
-    pre { font-size: 11px; padding: 14px 12px; word-break: break-all; white-space: pre-wrap; }
-
-    /* Inline code */
-    p code, li code, strong code { font-size: 11.5px; word-break: break-all; }
-
-    /* Flow diagram */
-    .flow { flex-direction: column; align-items: stretch; padding: 16px; gap: 6px; }
-    .flow-node { text-align: center; font-size: 12px; padding: 10px 16px; }
-    .flow-arrow { transform: rotate(90deg); text-align: center; font-size: 18px; }
-
-    /* Lists */
-    ul, ol { padding-left: 16px; }
-
-    /* Footer */
-    .footer { padding: 28px 16px; font-size: 12px; }
-
-    /* Back to top */
-    .back-to-top { bottom: 16px; right: 16px; width: 38px; height: 38px; }
-
-    /* Status badges */
-    .status { font-size: 10px; padding: 3px 8px; }
-
-    /* Callout */
-    .callout { padding: 16px; }
-    .callout h3 { font-size: 14px; }
-    .callout p { font-size: 13px; }
+    .hero { padding: 32px 24px; }
+    .hero h1 { font-size: 26px; }
+    .content { padding: 24px; }
+    .back-to-top { bottom: 16px; right: 16px; }
   }
 
   /* ── Print ── */
@@ -761,12 +648,6 @@
 </style>
 </head>
 <body>
-
-<!-- ═══ MOBILE MENU ═══ -->
-<button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-</button>
-<div class="mobile-overlay" id="mobileOverlay"></div>
 
 <!-- ═══ SCROLL PROGRESS ═══ -->
 <div class="scroll-progress"><div class="scroll-progress-bar" id="scrollBar"></div></div>
@@ -811,15 +692,19 @@
     <a href="#s4-3"><span class="num">4.3</span>Get Reimbursement</a>
     <a href="#s4-4"><span class="num">4.4</span>Set Employee</a>
     <a href="#s4-5"><span class="num">4.5</span>Set Company</a>
+    <a href="#s4-6"><span class="num">4.6</span>Pool (Optional)</a>
 
     <a class="section-title">Document Uploads</a>
     <a href="#s5-1"><span class="num">5.1</span>Signed Document</a>
-    <a href="#s5-2"><span class="num">5.2</span>Alteration Form</a>
-    <a href="#s5-3"><span class="num">5.3</span>Member Data File</a>
 
     <a class="section-title">Status Transitions</a>
     <a href="#s6-1"><span class="num">6.1</span>Submit for Approval</a>
     <a href="#s6-2"><span class="num">6.2</span>Submit for Issuance</a>
+
+    <a class="section-title">Document Downloads</a>
+    <a href="#s7-1"><span class="num">7.1</span>Download Contract</a>
+    <a href="#s7-2"><span class="num">7.2</span>Download Signed Quotation</a>
+    <a href="#s7-3"><span class="num">7.3</span>Download Quotation PDF</a>
 
     <a class="section-title">Reference</a>
     <a href="#workflow">Workflow Summary</a>
@@ -855,11 +740,15 @@
 
     <!-- ── What's New ── -->
     <div class="callout">
-      <h3>What's New — February 9, 2026</h3>
-      <p><strong>Member data validations on quotation creation</strong> (endpoint 3.1)<br>
-      Creating a quotation now enforces multiple member-data validations. See <a href="#s3-1">section 3.1</a> for full error details.</p>
-      <p><strong>First Premium Breakdown endpoint</strong> (<code>GET /purchase-requests/{id}/first-premium-breakdown/</code>)<br>
-      Retrieve the full regulatory-fee breakdown for any quotation, automatically divided by the current payment frequency. See <a href="#s3-7">section 3.7</a>.</p>
+      <h3>What's New — February 18, 2026</h3>
+      <p><strong>New Pool Endpoint (4.6)</strong><br>
+      Optional pool (side pool) amount is now managed via a dedicated endpoint <code>/pool/</code>. This one-time amount is added to the first premium and is <strong>NOT</strong> divided by payment frequency. Editable during <code>draft</code> and <code>pending_documents</code> status. Defaults to 0 if not set.</p>
+      <p><strong>Alteration Form Endpoint Removed</strong><br>
+      The alteration form upload endpoint (previously 5.2/5.3) has been removed as it is no longer needed.</p>
+      <p><strong>Country Column Support in 3.1</strong><br>
+      The quotation creation endpoint (3.1) now supports an optional <code>country</code> column. For non-Egyptian countries, National ID validation is skipped (minimum 5 chars required). If column is missing, defaults to Egypt with standard validation.</p>
+      <p><strong>Document Download Endpoints (section 7)</strong><br>
+      Three download endpoints: Contract (issued only), Signed Quotation (pending_issuance/issued), and Quotation PDF (any status).</p>
     </div>
 
     <!-- ══════════ 1. AUTHENTICATION ══════════ -->
@@ -1042,7 +931,7 @@
         <tr><td>Medical Category</td><td>Yes</td><td>Category name (e.g., 'K100') or numeric ID</td></tr>
         <tr><td>Life Category</td><td>No</td><td>Life insurance category name or ID (employees only)</td></tr>
         <tr><td>Member Type</td><td>Yes</td><td><code>employee</code>, <code>spouse</code>, or <code>child</code></td></tr>
-        <tr><td>Country</td><td>No</td><td>Defaults to 'Egypt'</td></tr>
+        <tr><td>Country</td><td>No</td><td>Defaults to 'Egypt'. Non-Egyptian countries skip National ID validation (min 5 chars)</td></tr>
         <tr><td>National ID</td><td>No</td><td>14-digit Egyptian National ID (can be filled later)</td></tr>
         <tr><td>Staff ID</td><td>No</td><td>Company staff/employee ID (can be filled later)</td></tr>
         <tr><td>Phone Number</td><td>No</td><td>11-digit mobile number (can be filled later)</td></tr>
@@ -1288,6 +1177,35 @@
   <span class="key">"reimbursement_iban"</span>: <span class="str">"EG123456789012345678901234"</span>
 }</pre>
 
+    <h3 id="s4-6">4.6 Get/Set Pool (Optional)</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> /purchase-requests/{id}/pool/</div>
+    <div class="endpoint"><span class="method method-patch">PATCH</span> /purchase-requests/{id}/pool/</div>
+    <p>The <strong>pool</strong> (side pool) is an optional one-time amount added to the <strong>first premium payment only</strong>. It is <strong>NOT</strong> divided by payment frequency. Defaults to <code>0</code> if not set or cleared.</p>
+    <p><strong>Editable during:</strong> <code>draft</code> and <code>pending_documents</code> (Pending Client Approval) only.</p>
+    <p><strong>GET Response (200 OK):</strong></p>
+    <pre class="json">{
+  <span class="key">"purchase_request_id"</span>: <span class="num">1</span>,
+  <span class="key">"pool"</span>: <span class="str">"0"</span>
+}</pre>
+    <p><strong>PATCH Request Body:</strong></p>
+    <pre class="json">{ <span class="key">"pool"</span>: <span class="num">5000</span> }</pre>
+    <p><strong>PATCH Response (200 OK):</strong></p>
+    <pre class="json">{
+  <span class="key">"message"</span>: <span class="str">"Pool updated successfully"</span>,
+  <span class="key">"purchase_request_id"</span>: <span class="num">1</span>,
+  <span class="key">"pool"</span>: <span class="str">"5000.00"</span>
+}</pre>
+    <p>Send <code>null</code>, empty string, or omit <code>pool</code> to reset to <code>0</code>. Negative values are rejected.</p>
+    <table>
+      <thead><tr><th>Status</th><th>Error</th><th>Cause</th></tr></thead>
+      <tbody>
+        <tr><td>400</td><td><code>Pool can only be updated during draft or pending_documents status.</code></td><td>Wrong quotation status</td></tr>
+        <tr><td>400</td><td><code>Pool value cannot be negative.</code></td><td>Negative number provided</td></tr>
+        <tr><td>400</td><td><code>Invalid pool value. Must be a valid decimal number.</code></td><td>Non-numeric value</td></tr>
+        <tr><td>404</td><td><code>Purchase request not found or does not belong to you</code></td><td>Wrong ID or not owner</td></tr>
+      </tbody>
+    </table>
+
     <hr>
 
     <!-- ══════════ 5. DOCUMENT UPLOADS ══════════ -->
@@ -1303,22 +1221,6 @@
       <li><strong>Success:</strong> <code>201 Created</code></li>
     </ul>
 
-    <h3 id="s5-2">5.2 Upload Alteration Form</h3>
-    <div class="endpoint"><span class="method method-post">POST</span> /purchase-requests/{id}/upload-alteration-form/</div>
-    <ul>
-      <li><strong>Field:</strong> <code>alterations_pdf</code> (file, required, PDF only)</li>
-      <li><strong>Optional</strong> — not required for issuance.</li>
-      <li><strong>GET</strong> on the same URL returns alteration form status.</li>
-      <li><strong>Success:</strong> <code>201 Created</code></li>
-    </ul>
-
-    <h3 id="s5-3">5.3 Upload Member Data File</h3>
-    <div class="endpoint"><span class="method method-post">POST</span> /purchase-requests/{id}/upload-member-data/</div>
-    <ul>
-      <li><strong>Field:</strong> <code>uploaded_file</code> (file, required, .xlsx or .xls)</li>
-      <li>Supplementary upload for admin review. Original member data is created during quotation creation (3.1).</li>
-      <li><strong>Success:</strong> <code>201 Created</code></li>
-    </ul>
 
     <hr>
 
@@ -1492,11 +1394,13 @@
         <tr><td>4.3</td><td><span class="method method-get">GET</span></td><td><code>/purchase-requests/{id}/reimbursement/</code></td><td>Get reimbursement</td></tr>
         <tr><td>4.4</td><td><span class="method method-patch">PATCH</span></td><td><code>/purchase-requests/{id}/reimbursement/</code></td><td>Set reimbursement (employee)</td></tr>
         <tr><td>4.5</td><td><span class="method method-patch">PATCH</span></td><td><code>/purchase-requests/{id}/reimbursement/</code></td><td>Set reimbursement (company)</td></tr>
+        <tr><td>4.6</td><td><span class="method method-get">GET</span> <span class="method method-patch">PATCH</span></td><td><code>/purchase-requests/{id}/pool/</code></td><td>Get/Set pool (optional, draft/pending_documents)</td></tr>
         <tr><td>5.1</td><td><span class="method method-post">POST</span></td><td><code>/purchase-requests/{id}/upload-signed-document/</code></td><td>Upload signed document</td></tr>
-        <tr><td>5.2</td><td><span class="method method-get">GET</span> <span class="method method-post">POST</span></td><td><code>/purchase-requests/{id}/upload-alteration-form/</code></td><td>Alteration form</td></tr>
-        <tr><td>5.3</td><td><span class="method method-post">POST</span></td><td><code>/purchase-requests/{id}/upload-member-data/</code></td><td>Upload member data file</td></tr>
         <tr><td>6.1</td><td><span class="method method-post">POST</span></td><td><code>/purchase-requests/{id}/submit-for-approval/</code></td><td>Submit for approval</td></tr>
         <tr><td>6.2</td><td><span class="method method-post">POST</span></td><td><code>/purchase-requests/{id}/submit-issuance/</code></td><td>Submit for issuance</td></tr>
+        <tr><td>7.1</td><td><span class="method method-get">GET</span></td><td><code>/purchase-requests/{id}/download-contract/</code></td><td>Download contract PDF (issued only)</td></tr>
+        <tr><td>7.2</td><td><span class="method method-get">GET</span></td><td><code>/purchase-requests/{id}/download-signed-quotation/</code></td><td>Download signed quotation PDF</td></tr>
+        <tr><td>7.3</td><td><span class="method method-get">GET</span></td><td><code>/purchase-requests/{id}/download-quotation-pdf/</code></td><td>Download quotation proposal PDF (any status)</td></tr>
       </tbody>
     </table>
 
@@ -1568,31 +1472,6 @@ const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }});
 }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 fadeEls.forEach(el => { el.classList.add('fade-in'); observer.observe(el); });
-
-// ── Mobile menu toggle ──
-const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-const mobileOverlay = document.getElementById('mobileOverlay');
-const sidebar = document.querySelector('.sidebar');
-
-function openMobileMenu() {
-  sidebar.classList.add('open');
-  mobileOverlay.style.display = 'block';
-  requestAnimationFrame(() => mobileOverlay.classList.add('visible'));
-  document.body.style.overflow = 'hidden';
-}
-function closeMobileMenu() {
-  sidebar.classList.remove('open');
-  mobileOverlay.classList.remove('visible');
-  setTimeout(() => { mobileOverlay.style.display = 'none'; }, 300);
-  document.body.style.overflow = '';
-}
-mobileMenuBtn.addEventListener('click', () => {
-  sidebar.classList.contains('open') ? closeMobileMenu() : openMobileMenu();
-});
-mobileOverlay.addEventListener('click', closeMobileMenu);
-document.querySelectorAll('.sidebar nav a[href^="#"]').forEach(a => {
-  a.addEventListener('click', closeMobileMenu);
-});
 
 // ── Base URL click-to-copy ──
 const baseUrl = document.querySelector('.hero .base-url');
