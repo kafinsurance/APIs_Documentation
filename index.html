@@ -742,13 +742,15 @@
     <div class="callout">
       <h3>What's New — February 18, 2026</h3>
       <p><strong>New Pool Endpoint (4.6)</strong><br>
-      Optional pool (side pool) amount is now managed via a dedicated endpoint <code>/pool/</code>. This one-time amount is added to the first premium and is <strong>NOT</strong> divided by payment frequency. Editable during <code>draft</code> and <code>pending_client_approval</code> status. Defaults to 0 if not set.</p>
+      Optional pool (side pool) amount is now managed via a dedicated endpoint <code>/pool/</code>. This one-time amount is added to the first premium and is <strong>NOT</strong> divided by payment frequency. Editable during <code>draft</code> and <code>pending_documents</code> status. Defaults to 0 if not set.</p>
       <p><strong>Alteration Form Endpoint Removed</strong><br>
       The alteration form upload endpoint (previously 5.2/5.3) has been removed as it is no longer needed.</p>
       <p><strong>Country Column Support in 3.1</strong><br>
       The quotation creation endpoint (3.1) now supports an optional <code>country</code> column. For non-Egyptian countries, National ID validation is skipped (minimum 5 chars required). If column is missing, defaults to Egypt with standard validation.</p>
       <p><strong>Document Download Endpoints (section 7)</strong><br>
       Three download endpoints: Contract (issued only), Signed Quotation (pending_issuance/issued), and Quotation PDF (any status).</p>
+      <p><strong>GET Methods Added to Document Upload Endpoints (2.6-2.9)</strong><br>
+      Document upload endpoints now support GET to retrieve uploaded documents. Returns the actual file as a download if uploaded, or 404 error if not yet uploaded.</p>
     </div>
 
     <!-- ══════════ 1. AUTHENTICATION ══════════ -->
@@ -871,34 +873,58 @@
 }</pre>
     <p>All 4 documents are required before any quotation for this lead can be submitted for issuance.</p>
 
-    <h3 id="s2-6">2.6 Upload Tax ID Document</h3>
-    <div class="endpoint"><span class="method method-post">POST</span> /leads/{lead_id}/upload-tax-id/</div>
+    <h3 id="s2-6">2.6 Upload/Get Tax ID Document</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> <span class="method method-post">POST</span> /leads/{lead_id}/upload-tax-id/</div>
+    <p><strong>GET:</strong> Retrieve Tax ID document if uploaded.</p>
+    <ul>
+      <li><strong>Success (200):</strong> Returns the actual file as a download</li>
+      <li><strong>Error (404):</strong> <code>Tax ID document has not been uploaded yet</code></li>
+    </ul>
+    <p><strong>POST:</strong> Upload Tax ID document.</p>
     <ul>
       <li><strong>Field:</strong> <code>tax_id_document</code> (file, required)</li>
       <li><strong>Auto-propagation:</strong> Copied to <code>tax_card</code> on all draft / Pending Client Approval quotations.</li>
       <li><strong>Success:</strong> <code>200 OK</code></li>
     </ul>
 
-    <h3 id="s2-7">2.7 Upload Commercial Registry</h3>
-    <div class="endpoint"><span class="method method-post">POST</span> /leads/{lead_id}/upload-commercial-registry/</div>
+    <h3 id="s2-7">2.7 Upload/Get Commercial Registry</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> <span class="method method-post">POST</span> /leads/{lead_id}/upload-commercial-registry/</div>
+    <p><strong>GET:</strong> Retrieve Commercial Registry document if uploaded.</p>
+    <ul>
+      <li><strong>Success (200):</strong> Returns the actual file as a download</li>
+      <li><strong>Error (404):</strong> <code>Commercial Registry document has not been uploaded yet</code></li>
+    </ul>
+    <p><strong>POST:</strong> Upload Commercial Registry document.</p>
     <ul>
       <li><strong>Field:</strong> <code>commercial_registry_document</code> (file, required)</li>
       <li><strong>Auto-propagation:</strong> Copied to <code>commercial_registry</code> on all draft / Pending Client Approval quotations.</li>
       <li><strong>Success:</strong> <code>200 OK</code></li>
     </ul>
 
-    <h3 id="s2-8">2.8 Upload KYC Document</h3>
-    <div class="endpoint"><span class="method method-post">POST</span> /leads/{lead_id}/upload-kyc/</div>
+    <h3 id="s2-8">2.8 Upload/Get KYC Document</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> <span class="method method-post">POST</span> /leads/{lead_id}/upload-kyc/</div>
+    <p><strong>GET:</strong> Retrieve KYC document if uploaded.</p>
+    <ul>
+      <li><strong>Success (200):</strong> Returns the actual file as a download</li>
+      <li><strong>Error (404):</strong> <code>KYC document has not been uploaded yet</code></li>
+    </ul>
+    <p><strong>POST:</strong> Upload KYC document.</p>
     <ul>
       <li><strong>Field:</strong> <code>kyc_document</code> (file, required)</li>
       <li><strong>Auto-propagation:</strong> Copied to <code>kyc_document</code> on all draft / Pending Client Approval quotations.</li>
       <li><strong>Success:</strong> <code>200 OK</code></li>
     </ul>
 
-    <h3 id="s2-9">2.9 Upload Broker of Record</h3>
-    <div class="endpoint"><span class="method method-post">POST</span> /leads/{lead_id}/upload-broker-of-record/</div>
+    <h3 id="s2-9">2.9 Upload/Get Broker of Record</h3>
+    <div class="endpoint"><span class="method method-get">GET</span> <span class="method method-post">POST</span> /leads/{lead_id}/upload-broker-of-record/</div>
+    <p><strong>GET:</strong> Retrieve Broker of Record document if uploaded.</p>
     <ul>
-      <li><strong>Field:</strong> <code>broker_of_record_document</code> (file, required, <strong>PDF only</strong>)</li>
+      <li><strong>Success (200):</strong> Returns the actual file as a download</li>
+      <li><strong>Error (404):</strong> <code>Broker of Record document has not been uploaded yet</code></li>
+    </ul>
+    <p><strong>POST:</strong> Upload Broker of Record document.</p>
+    <ul>
+      <li><strong>Field:</strong> <code>broker_of_record_document</code> (file, required, PDF only)</li>
       <li><strong>Auto-propagation:</strong> Runs after upload.</li>
       <li><strong>Success:</strong> <code>200 OK</code></li>
       <li><strong>Error:</strong> <code>400</code> if not a PDF file.</li>
@@ -1378,10 +1404,10 @@
         <tr><td>2.3</td><td><span class="method method-get">GET</span></td><td><code>/leads/{id}/</code></td><td>Get lead details</td></tr>
         <tr><td>2.4</td><td><span class="method method-patch">PATCH</span></td><td><code>/leads/{id}/</code></td><td>Update lead</td></tr>
         <tr><td>2.5</td><td><span class="method method-get">GET</span></td><td><code>/leads/{id}/documents/</code></td><td>Get lead document status</td></tr>
-        <tr><td>2.6</td><td><span class="method method-post">POST</span></td><td><code>/leads/{id}/upload-tax-id/</code></td><td>Upload Tax ID document</td></tr>
-        <tr><td>2.7</td><td><span class="method method-post">POST</span></td><td><code>/leads/{id}/upload-commercial-registry/</code></td><td>Upload Commercial Registry</td></tr>
-        <tr><td>2.8</td><td><span class="method method-post">POST</span></td><td><code>/leads/{id}/upload-kyc/</code></td><td>Upload KYC document</td></tr>
-        <tr><td>2.9</td><td><span class="method method-post">POST</span></td><td><code>/leads/{id}/upload-broker-of-record/</code></td><td>Upload Broker of Record (PDF)</td></tr>
+        <tr><td>2.6</td><td><span class="method method-get">GET</span> <span class="method method-post">POST</span></td><td><code>/leads/{id}/upload-tax-id/</code></td><td>Upload/Get Tax ID document</td></tr>
+        <tr><td>2.7</td><td><span class="method method-get">GET</span> <span class="method method-post">POST</span></td><td><code>/leads/{id}/upload-commercial-registry/</code></td><td>Upload/Get Commercial Registry</td></tr>
+        <tr><td>2.8</td><td><span class="method method-get">GET</span> <span class="method method-post">POST</span></td><td><code>/leads/{id}/upload-kyc/</code></td><td>Upload/Get KYC document</td></tr>
+        <tr><td>2.9</td><td><span class="method method-get">GET</span> <span class="method method-post">POST</span></td><td><code>/leads/{id}/upload-broker-of-record/</code></td><td>Upload/Get Broker of Record (PDF)</td></tr>
         <tr><td>3.1</td><td><span class="method method-post">POST</span></td><td><code>/purchase-requests/</code></td><td>Create quotation (draft)</td></tr>
         <tr><td>3.2</td><td><span class="method method-get">GET</span></td><td><code>/purchase-requests/</code></td><td>List quotations</td></tr>
         <tr><td>3.3</td><td><span class="method method-get">GET</span> <span class="method method-patch">PATCH</span></td><td><code>/purchase-requests/{id}/</code></td><td>Get/update quotation details</td></tr>
